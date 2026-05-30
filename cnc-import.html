@@ -61,7 +61,7 @@ tr:last-child td{border:none}
 <body>
 <div class="hdr">
   <div class="hdr-mark">ISIEPL</div>
-  <div><div class="hdr-title">Bulk Import Tool</div><div class="hdr-sub">Ideal Steels and Iron Ent Pvt Ltd — ProTrack Masters</div></div>
+  <div><div class="hdr-title">Bulk Import Tool</div><div class="hdr-sub">Ideal Steels and Iron Ent Pvt Ltd — ProTrack Masters · v2</div></div>
 </div>
 
 <div class="wrap">
@@ -146,7 +146,7 @@ Dispatch Team,dispatch,general,,no,,,</div>
 
       <div class="info">
         <strong>Column guide:</strong><br>
-        <b>name</b> — Machine name, required (e.g. Hobbing Machine 1) &nbsp;|&nbsp;
+        <b>name</b> — Machine name, required (e.g. Roughing Machine 1) &nbsp;|&nbsp;
         <b>code</b> — Machine ID/code, optional (e.g. M-01) &nbsp;|&nbsp;
         <b>type</b> — Machine type, optional (e.g. CNC, Hobbing, Grinding) &nbsp;|&nbsp;
         <b>stage</b> — Required: soft / ht / hard
@@ -262,7 +262,7 @@ NEW_PART_001,My New Part Name,PVPL,250.00</div>
       <div class="info">
         <strong>Column guide:</strong><br>
         <b>part_no</b> — Must match exactly (e.g. 1A009578R) &nbsp;|&nbsp;
-        <b>operation_name</b> — Must match exactly (e.g. Hobbing) &nbsp;|&nbsp;
+        <b>operation_name</b> — Must match exactly (e.g. Roughing) &nbsp;|&nbsp;
         <b>cycle_time_mins</b> — Minutes per piece (e.g. 4.5) &nbsp;|&nbsp;
         <b>target_qty_shift</b> — Leave blank to auto-calculate (450 ÷ cycle time) &nbsp;|&nbsp;
         <b>machine_name</b> — Optional, must match machine name in masters
@@ -336,7 +336,8 @@ async function loadFBData() {
   fbData.machines = machs.docs.map(d => ({ id: d.id, ...d.data() }));
   fbData.users = usrs.docs.map(d => ({ id: d.id, ...d.data() }));
 }
-loadFBData();
+const fbReady = loadFBData().catch(e => { console.error('master load failed', e); });
+console.log('CNC Import tool v2 ready');
 
 // ── Tabs ──
 function showTab(tab) {
@@ -354,13 +355,18 @@ function handleFile(inp, t) { if (inp.files[0]) processFile(inp.files[0], t); }
 
 // ── CSV Parser ──
 function parseCSV(text) {
-  const lines = text.trim().split('\n').map(l => l.trim()).filter(l => l && !l.startsWith('#'));
+  if (text && text.charCodeAt(0) === 0xFEFF) text = text.slice(1); // strip Excel BOM
+  const lines = text.replace(/\r\n?/g, '\n').split('\n').map(l => l.trim()).filter(l => l && !l.startsWith('#'));
   if (lines.length < 2) return { headers: [], rows: [] };
-  const headers = lines[0].split(',').map(h => h.trim().toLowerCase().replace(/\s+/g, '_'));
+  const h0 = lines[0];
+  const delim = (h0.split(';').length > h0.split(',').length) ? ';'
+              : (h0.split('\t').length > h0.split(',').length) ? '\t' : ',';
+  const clean = v => (v || '').trim().replace(/^"|"$/g, '').trim();
+  const headers = h0.split(delim).map(h => clean(h).toLowerCase().replace(/\s+/g, '_'));
   const rows = lines.slice(1).map((line, i) => {
-    const vals = line.split(',').map(v => v.trim());
+    const vals = line.split(delim);
     const obj = {};
-    headers.forEach((h, j) => { obj[h] = vals[j] || ''; });
+    headers.forEach((h, j) => { obj[h] = clean(vals[j]); });
     obj._row = i + 2;
     return obj;
   });
@@ -368,12 +374,19 @@ function parseCSV(text) {
 }
 
 // ── Process file ──
-function processFile(file, type) {
+async function processFile(file, type) {
   const reader = new FileReader();
-  reader.onload = e => {
+  reader.onerror = () => alert('Could not read the file from your device. Re-save it as CSV and try again.');
+  reader.onload = async e => {
     try {
+      let dbOk = true;
+      await Promise.race([ fbReady.then(()=>{}), new Promise(r => setTimeout(()=>{ dbOk = false; r(); }, 5000)) ]);
+      if (!dbOk && !fbData.parts.length && !fbData.operations.length) {
+        alert('Could not reach the database.\n\nThis usually means the tool is opened as a local file (the address bar shows file://...).\n\nOpen it from your hosted site instead, e.g. https://your-site/cnc-import.html — the same place as the app.');
+      }
       const { headers, rows } = parseCSV(e.target.result);
-      if (!headers.length) { alert('Could not read this file. Make sure it is a CSV with a header row.'); return; }
+      if (!headers.length) { alert('Could not find a header row. Export the file as CSV from Excel / Google Sheets and re-upload.'); return; }
+      if (!rows.length) { alert('This file has column headers but no data rows. Add at least one row and re-upload.'); return; }
       if (type === 'people') validatePeople(headers, rows);
       else if (type === 'machines') validateMachines(headers, rows);
       else if (type === 'parts') validateParts(headers, rows);
@@ -580,6 +593,12 @@ function validatePartOps(headers, rows) {
   });
 
   parsedData.partops = annotated;
+  if (valid === 0) {
+    if (!fbData.parts.length || !fbData.operations.length)
+      alert('No rows could be matched.\n\nPart-Operations links existing parts to existing operations, so first:\n• Add your Operations in the app (Masters → Operations)\n• Import your Parts (Parts tab)\n\nThen part_no and operation_name in this file must match them exactly.');
+    else
+      alert('No rows matched your masters. Check that each part_no and operation_name exactly matches an existing Part and Operation (see the red status messages in the preview).');
+  }
   renderPreview('partops', ['Row','Part No','Operation','Cycle Time','Target Qty','Machine','Status'],
     annotated.map(r => [
       r._row, r.part_no, r.operation_name,
