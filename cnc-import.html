@@ -9,7 +9,7 @@
 :root{--bg:#f0f5ff;--sur:#fff;--hdr:#1e3a8a;--acc:#2563eb;--ok:#16a34a;--er:#dc2626;--wa:#d97706;--mut:#64748b;--bdr:rgba(37,99,235,.12);--r:12px}
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:#0f172a;min-height:100vh}
 .hdr{background:var(--hdr);padding:18px 24px;display:flex;align-items:center;gap:14px}
-.hdr-mark{width:40px;height:40px;background:var(--acc);border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:800;color:#fff;font-size:16px}
+.hdr-mark{width:40px;height:40px;background:var(--acc);border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:800;color:#fff;font-size:11px;letter-spacing:-.3px}
 .hdr-title{color:#fff;font-size:16px;font-weight:700}
 .hdr-sub{color:rgba(255,255,255,.45);font-size:12px;margin-top:2px}
 .wrap{max-width:860px;margin:0 auto;padding:28px 20px}
@@ -371,11 +371,17 @@ function parseCSV(text) {
 function processFile(file, type) {
   const reader = new FileReader();
   reader.onload = e => {
-    const { headers, rows } = parseCSV(e.target.result);
-    if (type === 'people') validatePeople(headers, rows);
-    else if (type === 'machines') validateMachines(headers, rows);
-    else if (type === 'parts') validateParts(headers, rows);
-    else validatePartOps(headers, rows);
+    try {
+      const { headers, rows } = parseCSV(e.target.result);
+      if (!headers.length) { alert('Could not read this file. Make sure it is a CSV with a header row.'); return; }
+      if (type === 'people') validatePeople(headers, rows);
+      else if (type === 'machines') validateMachines(headers, rows);
+      else if (type === 'parts') validateParts(headers, rows);
+      else validatePartOps(headers, rows);
+    } catch (err) {
+      alert('Could not process this file: ' + err.message);
+      console.error(err);
+    }
   };
   reader.readAsText(file);
 }
@@ -560,10 +566,10 @@ function validatePartOps(headers, rows) {
     const part = fbData.parts.find(p => p.no === r.part_no);
     if (!part) errs.push('Part not found in masters');
 
-    const op = fbData.operations.find(o => o.name.toLowerCase() === (r.operation_name || '').toLowerCase());
+    const op = fbData.operations.find(o => (o.name||'').toLowerCase() === (r.operation_name || '').toLowerCase());
     if (!op) errs.push('Operation not found — add it in Masters first');
 
-    const machine = r.machine_name ? fbData.machines.find(m => m.name.toLowerCase() === r.machine_name.toLowerCase()) : null;
+    const machine = r.machine_name ? fbData.machines.find(m => (m.name||'').toLowerCase() === (r.machine_name||'').toLowerCase()) : null;
     if (r.machine_name && !machine) errs.push('Machine not found: ' + r.machine_name);
 
     const autoTarget = !isNaN(ct) && ct > 0 ? Math.round(450 / ct) : '—';
@@ -745,17 +751,15 @@ function downloadTemplate(type) {
   let csv = '';
   if (type === 'people') {
     csv = 'name,role,pin,app_user,plan_perm,actual_perm,reports_perm\n';
-    csv += 'Ramesh Kumar,operator,soft,1234,yes,full,full,view\n';
-    csv += 'Suresh Patil,supervisor,soft,5678,yes,full,full,full\n';
-    csv += 'Anil Sharma,manager,general,9012,yes,view,view,full\n';
-    csv += 'Vinod Dispatch,dispatch,general,,no,view,hidden,view\n';
+    csv += 'Ramesh Kumar,operator,1234,yes,full,full,view\n';
+    csv += 'Suresh Patil,supervisor,5678,yes,full,full,full\n';
+    csv += 'Anil Sharma,manager,9012,yes,view,view,full\n';
+    csv += 'Vinod Dispatch,dispatch,,no,view,hidden,view\n';
   } else if (type === 'machines') {
     csv = 'name,code,type\n';
-    csv += 'Hobbing Machine 1,M-01,Hobbing,soft\n';
-    csv += 'Hobbing Machine 2,M-02,Hobbing,soft\n';
-    csv += 'Gear Shaper 1,M-10,Shaping,soft\n';
-    csv += 'Heat Treatment Furnace 1,HT-01,Furnace,ht\n';
-    csv += 'Gear Grinding 1,G-01,Grinding,hard\n';
+    csv += 'CNC Lathe 1,L-01,Turning\n';
+    csv += 'CNC Lathe 2,L-02,Turning\n';
+    csv += 'VMC 1,V-01,Milling\n';
   } else if (type === 'parts') {
     csv = 'part_no,name,customer,rate\n';
     if (fbData.parts.length > 0) {
@@ -769,7 +773,7 @@ function downloadTemplate(type) {
   } else {
     csv = 'part_no,operation_name,cycle_time_mins,target_qty_shift,machine_name\n';
     fbData.parts.slice(0, 10).forEach(p => {
-      csv += `${p.no},Hobbing,,, \n`;
+      csv += `${p.no},,,,\n`;
     });
     if (fbData.parts.length > 10) csv += `# ... and ${fbData.parts.length - 10} more parts in your masters\n`;
   }
