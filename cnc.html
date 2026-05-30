@@ -21,7 +21,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,sans-seri
 .shell{display:flex;min-height:100vh}
 .sidebar{width:var(--sb);flex-shrink:0;background:var(--hdr);display:none;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:200;overflow-y:auto}
 .sb-logo{padding:22px 18px 18px;border-bottom:1px solid rgba(255,255,255,.1)}
-.sb-mark{width:46px;height:46px;background:var(--acc);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:19px;font-weight:800;color:#fff;margin-bottom:10px}
+.sb-mark{width:46px;height:46px;background:var(--acc);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:12px;letter-spacing:-.3px;font-weight:800;color:#fff;margin-bottom:10px}
 .sb-co{color:#fff;font-size:13px;font-weight:700}.sb-tag{color:rgba(255,255,255,.38);font-size:11px;margin-top:2px}
 .sb-nav{flex:1;padding:10px 8px}
 .sbi{display:flex;align-items:center;gap:11px;padding:10px 13px;border-radius:9px;cursor:pointer;color:rgba(255,255,255,.55);font-size:13px;font-weight:500;margin-bottom:2px;border:none;background:none;width:100%;text-align:left;transition:all .12s}
@@ -48,7 +48,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,sans-seri
 .lwrap{min-height:100vh;background:var(--hdr);display:flex;align-items:center;justify-content:center}
 .lbox{width:100%;max-width:420px}
 .lhero{display:flex;flex-direction:column;align-items:center;padding:40px 24px 18px}
-.llogo{width:70px;height:70px;background:var(--acc);border-radius:20px;display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:800;color:#fff;margin-bottom:13px}
+.llogo{width:70px;height:70px;background:var(--acc);border-radius:20px;display:flex;align-items:center;justify-content:center;font-size:17px;letter-spacing:-.5px;padding:0 4px;font-weight:800;color:#fff;margin-bottom:13px}
 .lco{color:#fff;font-size:21px;font-weight:700;text-align:center}.ltag{color:rgba(255,255,255,.38);font-size:12px;margin-top:4px}
 .lform{background:var(--sur);border-radius:22px 22px 0 0;padding:26px 22px calc(40px + env(safe-area-inset-bottom))}.lform h2{font-size:17px;font-weight:700;margin-bottom:18px}
 .card{background:var(--sur);border-radius:var(--r);padding:16px;margin-bottom:12px;border:.5px solid var(--bdr);box-shadow:0 1px 4px rgba(37,99,235,.06)}
@@ -208,7 +208,7 @@ const PSEED=[
   {no:'10_2101_008',name:'1ST SPEED GEAR',cust:'MLR',rate:243.87},{no:'10_2101_001',name:'MAIN SHAFT NEW',cust:'MLR',rate:400.55},{no:'10_2101_005',name:'4TH SPEED GEAR',cust:'MLR',rate:134.84},{no:'10_2100_021',name:'CLUSTER GEAR REG.',cust:'MLR',rate:603.08},{no:'12_2300_002',name:'RC GEAR COMM',cust:'MLR',rate:228.00},{no:'11_2300_002',name:'RC GEAR PASS',cust:'MLR',rate:256.34},{no:'11_2101_007',name:'2ND SPEED GEAR',cust:'MLR',rate:196.23},{no:'10_2101_006',name:'3RD SPEED GEAR',cust:'MLR',rate:155.23},{no:'11_2300_001',name:'IDLER GEAR PASS',cust:'MLR',rate:276.40},{no:'11_2300_001B',name:'IDLER GEAR COMM',cust:'MLR',rate:280.00},{no:'11_2301_001',name:'FD GEAR PASS',cust:'MLR',rate:382.20},{no:'12_2301_001',name:'FD GEAR COMM',cust:'MLR',rate:420.97}
 ];
 
-const S={sess:null,users:[],machines:[],parts:[],operations:[],partOps:[],shifts:{s1:{label:'Shift 1',start:'06:30',end:'15:00'},s2:{label:'Shift 2',start:'15:00',end:'23:30'},s3:{label:'Shift 3',start:'23:30',end:'06:30'}},plans:[],actuals:[],listeners:[],cur:'home',prev:null,planEntries:[],planReports:{},planStage:'',planType:'today',planEC:0,editingPlanId:null,planDayMode:false,planDayStage:'',planDayDate:'',planDayShift:'',actStage:'',actReports:{},editingActualId:null,pf:''};
+const S={sess:null,users:[],machines:[],parts:[],operations:[],partOps:[],shifts:{s1:{label:'Shift 1',start:'07:00',end:'19:00'},s2:{label:'Shift 2',start:'19:00',end:'07:00'}},plans:[],actuals:[],listeners:[],cur:'home',prev:null,planEntries:[],planReports:{},planStage:'',planType:'today',planEC:0,editingPlanId:null,planDayMode:false,planDayStage:'',planDayDate:'',planDayShift:'',actStage:'',actReports:{},editingActualId:null,pf:''};
 
 const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
 const nowTS=()=>new Date().toISOString();
@@ -1208,7 +1208,7 @@ function renderMasters(){
     <div class="mtile" onclick="go('m-parts','masters');renderParts()"><div class="mtic">🔩</div><div class="mtnm">Parts</div><div class="mtct">${S.parts.length} parts</div></div>
     <div class="mtile" onclick="go('m-ops','masters');renderOps()"><div class="mtic">🔧</div><div class="mtnm">Operations</div><div class="mtct">${S.operations.length} ops</div></div>
     <div class="mtile" onclick="go('m-partops','masters');renderPartOps()"><div class="mtic">📐</div><div class="mtnm">Part-Operations</div><div class="mtct">${S.partOps.length} records</div></div>
-    <div class="mtile" onclick="go('m-shifts','masters');renderShifts()"><div class="mtic">🕐</div><div class="mtnm">Shift Timings</div><div class="mtct">Edit times</div></div>
+    <div class="mtile" onclick="go('m-shifts','masters');renderShifts()"><div class="mtic">🕐</div><div class="mtnm">Shifts</div><div class="mtct">Add / edit shifts</div></div>
   </div></div>`;
 }
 
@@ -1482,8 +1482,13 @@ async function savePOInline(id,field,val){
 }
 async function delPO(id){if(!confirm('Delete?'))return;await db.collection('cnc_partOps').doc(id).delete();await reloadM();closeModal();renderPartOps();toast('Deleted')}
 
-function renderShifts(){document.getElementById('s-m-shifts').innerHTML=`<div class="hdr"><button class="hdr-back" onclick="goBack()">←</button><div class="hdr-info"><div class="hdr-title">Shift Timings</div></div></div><div class="pad"><div class="wbox">Changes here affect shift display across the entire app.</div>${Object.entries(S.shifts).map(([k,v])=>`<div class="card"><div class="card-hd">${v.label}</div><div class="row2"><div class="f"><label>Start Time</label><input type="time" id="sh-${k}-s" value="${v.start}"></div><div class="f"><label>End Time</label><input type="time" id="sh-${k}-e" value="${v.end}"></div></div><div class="f" style="margin:0"><label>Label</label><input type="text" id="sh-${k}-l" value="${v.label}"></div></div>`).join('')}<button class="btn btn-p" onclick="saveShifts()">Save Timings</button></div>`}
-async function saveShifts(){const sh={};Object.keys(S.shifts).forEach(k=>{sh[k]={start:document.getElementById('sh-'+k+'-s').value,end:document.getElementById('sh-'+k+'-e').value,label:document.getElementById('sh-'+k+'-l').value}});await db.collection('cnc_config').doc('shifts').set(sh);S.shifts=sh;toast('Shift timings saved ✓');go('masters');renderMasters()}
+let _shiftEdit=[];
+function renderShifts(){_shiftEdit=Object.entries(S.shifts).map(([k,v])=>({key:k,label:v.label||'',start:v.start||'',end:v.end||''}));_drawShifts();}
+function _drawShifts(){const cards=_shiftEdit.map((s,i)=>`<div class="card"><div class="fbw" style="margin-bottom:8px"><div class="card-hd" style="margin:0">${s.label||('Shift '+(i+1))}</div>${_shiftEdit.length>1?`<button class="btn btn-d btn-sm" onclick="removeShiftRow(${i})">Remove</button>`:''}</div><div class="f" style="margin-bottom:8px"><label>Label</label><input type="text" id="she-l-${i}" value="${s.label}" oninput="_shiftEdit[${i}].label=this.value" placeholder="e.g. Shift 1 / Day / Night"></div><div class="row2"><div class="f"><label>Start Time</label><input type="time" id="she-s-${i}" value="${s.start}" onchange="_shiftEdit[${i}].start=this.value"></div><div class="f"><label>End Time</label><input type="time" id="she-e-${i}" value="${s.end}" onchange="_shiftEdit[${i}].end=this.value"></div></div></div>`).join('');document.getElementById('s-m-shifts').innerHTML=`<div class="hdr"><button class="hdr-back" onclick="goBack()">←</button><div class="hdr-info"><div class="hdr-title">Shifts</div></div></div><div class="pad"><div class="wbox">Add, remove or edit shifts. Changes affect shift display across the entire app.</div>${cards}<button class="btn btn-s" style="margin-bottom:10px;width:100%" onclick="addShiftRow()">+ Add Shift</button><button class="btn btn-p" onclick="saveShifts()">Save Shifts</button></div>`;}
+function _syncShiftInputs(){_shiftEdit.forEach((s,i)=>{const l=document.getElementById('she-l-'+i),st=document.getElementById('she-s-'+i),en=document.getElementById('she-e-'+i);if(l)s.label=l.value;if(st)s.start=st.value;if(en)s.end=en.value;});}
+function addShiftRow(){_syncShiftInputs();_shiftEdit.push({key:'shift_'+uid(),label:'Shift '+(_shiftEdit.length+1),start:'',end:''});_drawShifts();}
+function removeShiftRow(i){if(_shiftEdit.length<=1){toast('At least one shift required');return}_syncShiftInputs();_shiftEdit.splice(i,1);_drawShifts();}
+async function saveShifts(){_syncShiftInputs();const sh={};for(const s of _shiftEdit){if(!(s.label||'').trim()){toast('Every shift needs a label');return}if(!s.start||!s.end){toast('Every shift needs start & end time');return}sh[s.key]={start:s.start,end:s.end,label:s.label.trim()};}if(!Object.keys(sh).length){toast('Add at least one shift');return}try{await db.collection('cnc_config').doc('shifts').set(sh);S.shifts=sh;toast('Shifts saved \u2713');go('masters');renderMasters()}catch(e){toast('Error: '+e.message)}}
 
 function logout(){S.listeners.forEach(u=>u());S.listeners=[];sSess(null);location.reload()}
 
