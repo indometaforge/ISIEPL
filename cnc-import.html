@@ -428,7 +428,7 @@ function validatePeople(headers, rows) {
       r.app_user || 'no', r.pin || '—',
       r.plan_perm || 'auto', r.actual_perm || 'auto', r.reports_perm || 'auto',
       r._ok ? '<span class="badge bdg-g">✓ OK</span>' : `<span class="badge bdg-r">✗ ${r._errs.join('; ')}</span>`
-    ], r._ok),
+    ]),
     valid, errors, 'people'
   );
 }
@@ -606,7 +606,7 @@ function validatePartOps(headers, rows) {
       r._target + ' pcs',
       r.machine_name || '—',
       r._ok ? '<span class="badge bdg-g">✓ OK</span>' : `<span class="badge bdg-r">✗ ${r._errs.join('; ')}</span>`
-    ], r._ok),
+    ]),
     valid, errors, 'partops'
   );
 }
